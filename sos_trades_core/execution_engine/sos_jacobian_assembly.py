@@ -491,11 +491,14 @@ class SoSJacobianAssembly(JacobianAssembly):
         # split the array of steps
         newton_step_dict = {}
         component = 0
-        for coupling in couplings:
-            size = self.sizes[coupling]
-            newton_step_dict[coupling] = -relax_factor * \
-                newton_step[component: component + size]
-            component += size
+        try:
+            for coupling in couplings:
+                size = self.sizes[coupling]
+                newton_step_dict[coupling] = -relax_factor * \
+                    newton_step[component: component + size]
+                component += size
+        except:
+            pass
 
         return newton_step_dict
 

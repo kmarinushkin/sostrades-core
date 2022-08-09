@@ -21,7 +21,7 @@ from typing import Dict
 from typing import Optional
 from typing import Union
 
-import petsc4py  # pylint: disable-msg=E0401
+#import petsc4py  # pylint: disable-msg=E0401
 from gemseo.algos.linear_solvers.linear_solver_lib import LinearSolverLib
 from gemseo.algos.linear_solvers.ksp_lib import _convert_ndarray_to_mat_or_vec  # pylint: disable-msg=E0401
 from numpy import arange
@@ -34,8 +34,8 @@ from scipy.sparse.base import issparse
 
 # Must be done before from petsc4py import PETSc, this loads the options from
 # command args in the options database.
-petsc4py.init(sys.argv)
-from petsc4py import PETSc  # pylint: disable-msg=E0401
+#petsc4py.init(sys.argv)
+#from petsc4py import PETSc  # pylint: disable-msg=E0401
 
 LOGGER = logging.getLogger(__name__)
 
@@ -212,7 +212,7 @@ class PetscKSPAlgos(LinearSolverLib):
         # first run
         options["old_sol"] = None
 
-        sol, info, ksp = self._run_petsc_strategy(**options)
+        sol, info, ksp = 0, 0, 0 # self._run_petsc_strategy(**options)
 
         if info < 0:
 
