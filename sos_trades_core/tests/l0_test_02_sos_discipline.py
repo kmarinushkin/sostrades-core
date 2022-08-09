@@ -17,11 +17,14 @@ limitations under the License.
 mode: python; py-indent-offset: 4; tab-width: 4; coding: utf-8
 '''
 import unittest
+import numpy as np
 
 from sos_trades_core.sos_wrapping.test_discs.disc1 import Disc1
+from sos_trades_core.sos_wrapping.test_discs.disc_distortion import DiscDistortion
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
+from sos_trades_core.tools.post_processing.post_processing_factory import PostProcessingFactory
 
 
 class TestSoSDiscipline(unittest.TestCase):
@@ -40,6 +43,7 @@ class TestSoSDiscipline(unittest.TestCase):
         self.mod1_path = f'{base_path}.disc1.Disc1'
         self.mod2_path = f'{base_path}.disc2.Disc2'
         self.mod8_path = f'{base_path}.disc8.Disc8'
+        self.mod_dist_path = f'{base_path}.disc_distortion.DiscDistortion'
 
     def test_01_instantiate_sosdiscipline(self):
         '''
@@ -350,3 +354,39 @@ class TestSoSDiscipline(unittest.TestCase):
         out_dict = disc8.get_sosdisc_outputs()
         ref_out = {'indicator': 200.0, 'y': 120.0}
         self.assertDictEqual(ref_out, out_dict, 'error in input dict')
+
+    def test_11_check_distortion_success(self):
+        ''' Test successful DiscDistortion run '''
+        study_name = 'TestDistortionSuccess'
+        disc_name = 'DiscDistortion'
+        limit = 0.7
+
+        # create execution engine
+        self.ee = ExecutionEngine(study_name)
+        self.ee.ns_manager.add_ns('ns_distortion', study_name)
+
+        # add DiscDistortion
+        builder = self.ee.factory.get_builder_from_module(disc_name,
+                                                          self.mod_dist_path)
+        self.ee.factory.set_builders_to_coupling_builder(builder)
+        self.ee.configure()
+
+        # generate sin wave
+        sample_rate = 100
+        x = np.arange(sample_rate)
+        y = np.sin(2 * np.pi * (x / sample_rate))
+
+        # create input dictionary
+        values_dict = { }
+        values_dict[study_name + '.' + disc_name + '.wave'] = y
+        values_dict[study_name + '.' + disc_name + '.limit'] = limit
+        self.ee.load_study_from_input_dict(values_dict)
+
+        # execute DiscDistortion
+        self.ee.execute()
+
+        # verify outputs
+        disc = self.ee.root_process.sos_disciplines[0]
+        out_dict = disc.get_sosdisc_outputs()
+        for v in out_dict['wave']:
+            self.assertTrue( -limit <= v <= limit)
