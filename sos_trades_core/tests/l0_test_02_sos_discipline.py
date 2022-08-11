@@ -393,10 +393,10 @@ class TestSoSDiscipline(unittest.TestCase):
         # verify outputs
         disc = self.ee.root_process.sos_disciplines[0]
         out_dict = disc.get_sosdisc_outputs()
-        for v in out_dict['wave']:
+        for v in out_dict['wave1']:
             self.assertTrue( -limit <= v <= limit)
 
-    def test_12_check_amplifier_success(self):
+    def _test_12_check_amplifier_success(self):
         ''' Test successful DiscAmplifier run '''
         study_name = 'TestAmplifierSuccess'
         disc_name = 'DiscAmplifier'
@@ -415,7 +415,7 @@ class TestSoSDiscipline(unittest.TestCase):
         # create input dictionary
         x, y = self._gen_sin_wave()
         values_dict = { }
-        values_dict[study_name + '.' + disc_name + '.wave'] = y
+        values_dict[study_name + '.' + disc_name + '.wave1'] = y
         values_dict[study_name + '.' + disc_name + '.rate'] = rate
         self.ee.load_study_from_input_dict(values_dict)
 
@@ -425,6 +425,45 @@ class TestSoSDiscipline(unittest.TestCase):
         # verify outputs
         disc = self.ee.root_process.sos_disciplines[0]
         out_dict = disc.get_sosdisc_outputs()
-        for k, vout in enumerate(out_dict['wave']):
+        for k, vout in enumerate(out_dict['wave2']):
             vin = y[k]
             self.assertTrue(vout == vin * rate)
+
+    def test_13_check_coupling_wave_processing(self):
+        ''' Test coupling DiscDistortion and DiscAmplifier '''
+        study_name = 'TestCouplingWave'
+        disc_name0 = 'DiscDistortion'
+        disc_name1 = 'DiscAmplifier'
+        limit = 0.8
+        rate = 2.0
+
+        # create execution engine
+        self.ee = ExecutionEngine(study_name)
+        self.ee.ns_manager.add_ns('ns_wave_processing', study_name)
+
+        # add DiscDistortion
+        builder0 = self.ee.factory.get_builder_from_module(disc_name0,
+                                                           self.mod_dist_path)
+        builder1 = self.ee.factory.get_builder_from_module(disc_name1,
+                                                           self.mod_amp_path)
+        self.ee.factory.set_builders_to_coupling_builder([ builder0, builder1 ])
+        self.ee.configure()
+
+        # create input dictionary
+        x, y = self._gen_sin_wave()
+        values_dict = { }
+        values_dict[study_name + '.' + disc_name0 + '.wave'] = y
+        values_dict[study_name + '.' + disc_name0 + '.limit'] = limit
+        values_dict[study_name + '.' + disc_name1 + '.rate'] = rate
+        self.ee.load_study_from_input_dict(values_dict)
+
+        # execute DiscDistortion
+        self.ee.execute()
+
+        # verify outputs
+        disc = self.ee.root_process.sos_disciplines[1]
+        out_dict = disc.get_sosdisc_outputs()
+        for k, vout in enumerate(out_dict['wave2']):
+            vin = y[k]
+            if vin >= limit:
+                self.assertTrue(vout == limit * rate)

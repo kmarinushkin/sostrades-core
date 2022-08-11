@@ -39,16 +39,16 @@ class DiscAmplifier(SoSDiscipline):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'wave': {'type': 'array' },
+        'wave1': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_wave_processing' },
         'rate': {'type': 'float', 'default': 1.0}
     }
     DESC_OUT = {
-        'wave': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_wave_processing'},
+        'wave2': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_wave_processing'},
     }
 
     def run(self):
         ''' Run discipline '''
-        wave_in = self.get_sosdisc_inputs('wave')
+        wave_in = self.get_sosdisc_inputs('wave1')
         rate = self.get_sosdisc_inputs('rate')
 
         wave_out = [ ]
@@ -59,5 +59,5 @@ class DiscAmplifier(SoSDiscipline):
             wave_out.append(vout)
 
         dict_out = { }
-        dict_out['wave'] = wave_out
+        dict_out['wave2'] = wave_out
         self.store_sos_outputs_values(dict_out)

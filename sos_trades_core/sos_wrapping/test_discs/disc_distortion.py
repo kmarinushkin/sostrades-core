@@ -42,7 +42,7 @@ class DiscDistortion(SoSDiscipline):
         'limit': {'type': 'float', 'default': 0.8}
     }
     DESC_OUT = {
-        'wave': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_wave_processing'},
+        'wave1': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_wave_processing'},
     }
 
     def run(self):
@@ -63,5 +63,5 @@ class DiscDistortion(SoSDiscipline):
             wave_out.append(vout)
 
         dict_out = { }
-        dict_out['wave'] = wave_out
+        dict_out['wave1'] = wave_out
         self.store_sos_outputs_values(dict_out)
