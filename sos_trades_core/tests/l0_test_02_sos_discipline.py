@@ -45,6 +45,13 @@ class TestSoSDiscipline(unittest.TestCase):
         self.mod8_path = f'{base_path}.disc8.Disc8'
         self.mod_dist_path = f'{base_path}.disc_distortion.DiscDistortion'
 
+    def _gen_sin_wave(self):
+        ''' generate sin wave '''
+        sample_rate = 100
+        x = np.arange(sample_rate)
+        y = np.sin(2 * np.pi * (x / sample_rate))
+        return x, y
+
     def test_01_instantiate_sosdiscipline(self):
         '''
         default initialisation test
@@ -363,7 +370,7 @@ class TestSoSDiscipline(unittest.TestCase):
 
         # create execution engine
         self.ee = ExecutionEngine(study_name)
-        self.ee.ns_manager.add_ns('ns_distortion', study_name)
+        self.ee.ns_manager.add_ns('ns_wave_processing', study_name)
 
         # add DiscDistortion
         builder = self.ee.factory.get_builder_from_module(disc_name,
@@ -371,12 +378,8 @@ class TestSoSDiscipline(unittest.TestCase):
         self.ee.factory.set_builders_to_coupling_builder(builder)
         self.ee.configure()
 
-        # generate sin wave
-        sample_rate = 100
-        x = np.arange(sample_rate)
-        y = np.sin(2 * np.pi * (x / sample_rate))
-
         # create input dictionary
+        x, y = self._gen_sin_wave()
         values_dict = { }
         values_dict[study_name + '.' + disc_name + '.wave'] = y
         values_dict[study_name + '.' + disc_name + '.limit'] = limit

@@ -1,6 +1,4 @@
 '''
-Copyright 2022 OS-Climate https://os-climate.org
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -29,7 +27,7 @@ class DiscDistortion(SoSDiscipline):
         'type': 'Fake',
         'source': 'SoSTrades Project',
         'validated': '',
-        'validated_by': '',
+        'validated_by': 'SoSTrades Project',
         'last_modification_date': '',
         'category': '',
         'definition': '',
@@ -40,11 +38,11 @@ class DiscDistortion(SoSDiscipline):
     _maturity = 'Fake'
 
     DESC_IN = {
-        'wave': {'type': 'float'},
+        'wave': {'type': 'array' },
         'limit': {'type': 'float', 'default': 0.8}
     }
     DESC_OUT = {
-        'wave': {'type': 'float', 'visibility': 'Shared', 'namespace': 'ns_distortion'},
+        'wave': {'type': 'array', 'visibility': 'Shared', 'namespace': 'ns_wave_processing'},
     }
 
     def run(self):
