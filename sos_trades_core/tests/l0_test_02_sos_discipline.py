@@ -21,6 +21,7 @@ import numpy as np
 
 from sos_trades_core.sos_wrapping.test_discs.disc1 import Disc1
 from sos_trades_core.sos_wrapping.test_discs.disc_distortion import DiscDistortion
+from sos_trades_core.sos_wrapping.test_discs.disc_amplifier import DiscAmplifier
 from sos_trades_core.execution_engine.sos_coupling import SoSCoupling
 from sos_trades_core.execution_engine.sos_discipline import SoSDiscipline
 from sos_trades_core.execution_engine.execution_engine import ExecutionEngine
@@ -44,6 +45,7 @@ class TestSoSDiscipline(unittest.TestCase):
         self.mod2_path = f'{base_path}.disc2.Disc2'
         self.mod8_path = f'{base_path}.disc8.Disc8'
         self.mod_dist_path = f'{base_path}.disc_distortion.DiscDistortion'
+        self.mod_amp_path = f'{base_path}.disc_amplifier.DiscAmplifier'
 
     def _gen_sin_wave(self):
         ''' generate sin wave '''
@@ -393,3 +395,36 @@ class TestSoSDiscipline(unittest.TestCase):
         out_dict = disc.get_sosdisc_outputs()
         for v in out_dict['wave']:
             self.assertTrue( -limit <= v <= limit)
+
+    def test_12_check_amplifier_success(self):
+        ''' Test successful DiscAmplifier run '''
+        study_name = 'TestAmplifierSuccess'
+        disc_name = 'DiscAmplifier'
+        rate = 2.0
+
+        # create execution engine
+        self.ee = ExecutionEngine(study_name)
+        self.ee.ns_manager.add_ns('ns_wave_processing', study_name)
+
+        # add DiscDistortion
+        builder = self.ee.factory.get_builder_from_module(disc_name,
+                                                          self.mod_amp_path)
+        self.ee.factory.set_builders_to_coupling_builder(builder)
+        self.ee.configure()
+
+        # create input dictionary
+        x, y = self._gen_sin_wave()
+        values_dict = { }
+        values_dict[study_name + '.' + disc_name + '.wave'] = y
+        values_dict[study_name + '.' + disc_name + '.rate'] = rate
+        self.ee.load_study_from_input_dict(values_dict)
+
+        # execute DiscDistortion
+        self.ee.execute()
+
+        # verify outputs
+        disc = self.ee.root_process.sos_disciplines[0]
+        out_dict = disc.get_sosdisc_outputs()
+        for k, vout in enumerate(out_dict['wave']):
+            vin = y[k]
+            self.assertTrue(vout == vin * rate)
